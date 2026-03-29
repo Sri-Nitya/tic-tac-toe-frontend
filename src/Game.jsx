@@ -5,6 +5,7 @@ export default function Game({ socket, match, session }) {
     const [turn, setTurn] = useState("");
     const [status, setStatus] = useState("Waiting for opponent...");
     const [symbol, setSymbol] = useState("");
+    const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
         if (!socket) return;
@@ -12,28 +13,50 @@ export default function Game({ socket, match, session }) {
         const handleMatchData = (message) => {
             try {
                 const decoded = new TextDecoder().decode(message.data);
-                const state = JSON.parse(decoded);
+                const payload = JSON.parse(decoded);
 
-                console.log("STATE:", state);
+                console.log("MATCH DATA:", message.op_code, payload);
 
-                if (state.board) {
-                    const flatBoard = state.board.flat();
-                    setBoard(flatBoard);
-                }
+                if (message.op_code === 1) {
+                    if (payload.board) {
+                        setBoard(payload.board.flat());
+                    }
 
-                if (state.turn) setTurn(state.turn);
+                    if (payload.turn) {
+                        setTurn(payload.turn);
+                    }
 
-                if (state.players && session) {
-                    const myId = session.user_id;
-                    if (state.players[myId]) {
-                        setSymbol(state.players[myId]);
+                    if (payload.players && session) {
+                        const myId = session.user_id;
+                        if (payload.players[myId]) {
+                            setSymbol(payload.players[myId]);
+                        }
+                    }
+
+                    if (payload.gameOver) {
+                        setGameOver(true);
+                        if (payload.winner) {
+                            setStatus(`Winner: ${payload.winner}`);
+                        } else {
+                            setStatus("Game over");
+                        }
+                    } else if (payload.turn) {
+                        setStatus(`Turn: ${payload.turn}`);
+                    } else {
+                        setStatus("Waiting for opponent...");
                     }
                 }
 
-                if (state.winner) {
-                    setStatus(`Winner: ${state.winner}`);
-                } else {
-                    setStatus(`Turn: ${state.turn}`);
+                if (message.op_code === 2) {
+                    setGameOver(true);
+
+                    if (payload.type === "win") {
+                        setStatus(`Winner: ${payload.winner}`);
+                    } else if (payload.type === "draw") {
+                        setStatus(payload.message || "It's a draw");
+                    } else if (payload.type === "disconnect") {
+                        setStatus(payload.message || "Opponent disconnected");
+                    }
                 }
             } catch (err) {
                 console.error("Parse error:", err);
@@ -50,34 +73,19 @@ export default function Game({ socket, match, session }) {
     }, [socket, session]);
 
     const sendMove = (index) => {
-        console.log("sendMove called");
-
-        if (!socket || !match) {
-            console.log("socket or match missing");
-            return;
-        }
-
-        if (board[index] !== "") {
-            console.log("cell already filled");
-            return;
-        }
-
-        if (turn !== symbol) {
-            console.log("not your turn", { turn, symbol });
-            return;
-        }
+        if (!socket || !match || gameOver) return;
+        if (!symbol) return;
+        if (board[index] !== "") return;
+        if (turn !== symbol) return;
 
         const row = Math.floor(index / 3);
         const col = index % 3;
 
-        console.log("sending move:", row, col);
-
-        const data = new TextEncoder().encode(
-            JSON.stringify({ row, col })
-        );
-
+        const data = new TextEncoder().encode(JSON.stringify({ row, col }));
         socket.sendMatchState(match.match_id, 1, data);
     };
+    
+    const isMyTurn = turn === symbol && !gameOver;
 
     return (
         <div style={{ textAlign: "center" }}>
@@ -96,10 +104,7 @@ export default function Game({ socket, match, session }) {
                 {board.map((cell, i) => (
                     <div
                         key={i}
-                        onClick={() => {
-                            console.log("CLICKED:", i);
-                            sendMove(i);
-                        }}
+                        onClick={() => sendMove(i)}
                         style={{
                             width: "100px",
                             height: "100px",
@@ -108,8 +113,8 @@ export default function Game({ socket, match, session }) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            cursor: turn === symbol ? "pointer" : "not-allowed",
-                            opacity: turn === symbol ? 1 : 0.6,
+                            cursor: isMyTurn && cell === "" ? "pointer" : "not-allowed",
+                            opacity: isMyTurn || cell !== "" ? 1 : 0.6,
                             background: "#f9f9f9",
                         }}
                     >

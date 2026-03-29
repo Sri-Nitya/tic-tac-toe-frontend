@@ -7,28 +7,34 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [match, setMatch] = useState(null);
   const [session, setSession] = useState(null);
+  const [error, setError] = useState("");
 
-  // Create socket once when app loads
   useEffect(() => {
     const init = async () => {
-      const result = await createSocket();
-      console.log("INIT RESULT:", result);
-      const { socket, session } = await createSocket();
-      setSocket(socket);
-      setSession(session);
+      try {
+        const { socket, session } = await createSocket();
+        setSocket(socket);
+        setSession(session);
+      } catch (err) {
+        console.error("Failed to initialize app:", err);
+        setError("Failed to connect to Nakama server.");
+      }
     };
     init();
   }, []);
 
-  // Wait until socket is ready
+  if (error) {
+    return <div style={{ textAlign: "center", marginTop: "50px" }}>{error}</div>;
+  }
+
   if (!socket || !session) {
-    return <div>Connecting...</div>;
+    return <div style={{ textAlign: "center", marginTop: "50px" }}>Connecting...</div>;
   }
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       {!match ? (
-        <Lobby socket={socket} setMatch={setMatch} />
+        <Lobby socket={socket} session={session} setMatch={setMatch} />
       ) : (
         <Game socket={socket} match={match} session={session} />
       )}

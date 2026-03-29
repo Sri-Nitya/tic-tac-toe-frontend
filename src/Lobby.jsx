@@ -1,35 +1,64 @@
-import { client, session } from "./nakama";
 import { useState } from "react";
+import { client } from "./nakama";
 
-export default function Lobby({ socket, setMatch }) {
+export default function Lobby({ socket, session, setMatch }) {
     const [matchId, setMatchId] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const createMatch = async () => {
-        const res = await client.rpc(session, "create_match", {});
+        try {
+            setLoading(true);
+            setError("");
 
-        const data = typeof res.payload === "string"
-            ? JSON.parse(res.payload)
-            : res.payload;
+            const res = await client.rpc(session, "create_match", {});
+            const data =
+                typeof res.payload === "string" ? JSON.parse(res.payload) : res.payload;
 
-        const matchId = data.matchId;
+            const createdMatchId = data.matchId;
+            const joinedMatch = await socket.joinMatch(createdMatchId);
+            console.log("Match Id:", createdMatchId);
 
-        console.log("Match ID:", matchId);
-
-        const joinedMatch = await socket.joinMatch(matchId);
-
-        setMatchId(matchId);
-        setMatch(joinedMatch);
+            setMatchId(createdMatchId);
+            setMatch(joinedMatch);
+        } catch (err) {
+            console.error("Create match failed:", err);
+            setError("Unable to create match.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const joinMatch = async () => {
-        const match = await socket.joinMatch(matchId);
-        setMatch(match);
+        try {
+            setLoading(true);
+            setError("");
+
+            if (!matchId.trim()) {
+                setError("Please enter a match ID.");
+                return;
+            }
+
+            const joinedMatch = await socket.joinMatch(matchId.trim());
+            setMatch(joinedMatch);
+        } catch (err) {
+            console.error("Join match failed:", err);
+            setError("Unable to join match. Check the match ID.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div>
             <h1>Tic Tac Toe</h1>
-            <button onClick={createMatch}>Create Match</button>
-            <br /><br />
+
+            <button onClick={createMatch} disabled={loading}>
+                {loading ? "Please wait..." : "Create Match"}
+            </button>
+
+            <br />
+            <br />
 
             <input
                 placeholder="Enter Match ID"
@@ -37,9 +66,13 @@ export default function Lobby({ socket, setMatch }) {
                 onChange={(e) => setMatchId(e.target.value)}
             />
 
-            <button onClick={joinMatch}>Join Match</button>
+            <button onClick={joinMatch} disabled={loading}>
+                Join Match
+            </button>
 
-            <p>Match ID: {matchId}</p>
+            <p>Match ID: {matchId || "-"}</p>
+
+            {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
     );
 }
