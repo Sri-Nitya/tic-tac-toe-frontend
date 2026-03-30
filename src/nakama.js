@@ -12,8 +12,8 @@ console.log("PARSED useSSL:", useSSL);
 console.log("HOST:", host);
 console.log("PORT:", port);
 console.log(
-  "FINAL SOCKET URL:",
-  `${useSSL ? "wss" : "ws"}://${host}:${port}/ws`
+    "FINAL SOCKET URL:",
+    `${useSSL ? "wss" : "ws"}://${host}:${port}/ws`
 );
 console.log("====================");
 
@@ -39,7 +39,7 @@ export const createSocket = async () => {
         return { socket: currentSocket, session };
     }
 
-    currentSocket = client.createSocket();
+    currentSocket = client.createSocket(useSSL, false);
     await currentSocket.connect(session, true);
 
     console.log("Socket connected");
