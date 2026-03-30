@@ -53,9 +53,14 @@ export default function Game({ socket, match, session, onGameEnd }) {
 
                         if (payload.gameOver) {
                             setGameOver(true);
+
+                            const result = payload.winner ? payload.winner === session.user_id ? "win" : "lose" : "draw";
                             setStatus(payload.winner ? `Winner: ${payload.winner}` : "Game over");
                             if (onGameEnd) {
-                                setTimeout(() => onGameEnd(), 1500); 
+                                setTimeout(() => onGameEnd({
+                                    result,
+                                    winner: payload.winner,
+                                }), 1500); 
                             }
                             return;
                         }
@@ -78,16 +83,18 @@ export default function Game({ socket, match, session, onGameEnd }) {
                 if (message.op_code === 2) {
                     setGameOver(true);
 
-                    if (onGameEnd) {
-                        setTimeout(() => onGameEnd(), 1500);
-                    }
+                    let result = "draw";
 
                     if (payload.type === "win") {
-                        setStatus(`Winner: ${payload.winner}`);
+                        result = payload.winner === session.user_id ? "win" : "lose";
                     } else if (payload.type === "draw") {
-                        setStatus("It's a draw");
+                        result = "draw";
                     } else if (payload.type === "disconnect") {
-                        setStatus("Opponent disconnected");
+                        result = "win"; 
+                    }
+
+                    if (onGameEnd) {
+                        setTimeout(() => onGameEnd({ result, winner: payload.winner }), 1500);
                     }
                 }
             } catch (err) {

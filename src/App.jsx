@@ -10,6 +10,7 @@ function App() {
   const [error, setError] = useState("");
   const [screen, setScreen] = useState("nickname");
   const [nickname, setNickname] = useState("");
+  const [resultData, setResult] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -80,8 +81,9 @@ function App() {
         match={match}
         session={session}
         nickname={nickname}
-        onGameEnd={() => {
+        onGameEnd={(data) => {
           setMatch(null);
+          setResult(data)
           setScreen("result");
         }}
       />
@@ -90,12 +92,30 @@ function App() {
 
   if (screen === "result") {
     return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Game Over</h2>
+      <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
+        <div className="card p-4 shadow text-center" style={{ width: "350px" }}>
 
-        <button onClick={() => setScreen("lobby")}>
-          Back to Lobby
-        </button>
+          <h2 className="mb-3">
+            {resultData?.result === "win" && "🎉 You Won!"}
+            {resultData?.result === "lose" && "😔 You Lost"}
+            {resultData?.result === "draw" && "🤝 It's a Draw"}
+          </h2>
+
+          <p className="mb-2">
+            <strong>{nickname}</strong> vs Opponent
+          </p>
+
+          <div className="mt-3">
+
+            <button
+              className="btn btn-outline-secondary w-100"
+              onClick={() => setScreen("lobby")}
+            >
+              Back to Lobby
+            </button>
+          </div>
+
+        </div>
       </div>
     );
   }
