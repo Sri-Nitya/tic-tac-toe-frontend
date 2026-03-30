@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function Game({ socket, match, session }) {
+export default function Game({ socket, match, session, onGameEnd }) {
     const [board, setBoard] = useState(Array(9).fill(""));
     const [turn, setTurn] = useState("");
     const [status, setStatus] = useState("Waiting for opponent...");
@@ -54,6 +54,9 @@ export default function Game({ socket, match, session }) {
                         if (payload.gameOver) {
                             setGameOver(true);
                             setStatus(payload.winner ? `Winner: ${payload.winner}` : "Game over");
+                            if (onGameEnd) {
+                                setTimeout(() => onGameEnd(), 1500); 
+                            }
                             return;
                         }
 
@@ -75,6 +78,10 @@ export default function Game({ socket, match, session }) {
                 if (message.op_code === 2) {
                     setGameOver(true);
 
+                    if (onGameEnd) {
+                        setTimeout(() => onGameEnd(), 1500);
+                    }
+
                     if (payload.type === "win") {
                         setStatus(`Winner: ${payload.winner}`);
                     } else if (payload.type === "draw") {
@@ -94,7 +101,7 @@ export default function Game({ socket, match, session }) {
         return () => {
             socket.onmatchdata = null;
         };
-    }, [socket, session, turn]);
+    }, [socket, session, turn, onGameEnd]);
 
     const sendMove = (index) => {
         if (!socket || !match || gameOver) return;
