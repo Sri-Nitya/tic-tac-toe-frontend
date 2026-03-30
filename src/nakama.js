@@ -1,11 +1,10 @@
 import { Client } from "@heroiclabs/nakama-js";
 
-const useSSL = import.meta.env.VITE_NAKAMA_SSL === "true";
+const rawSSL = import.meta.env.VITE_NAKAMA_SSL;
+const useSSL = String(rawSSL).trim().toLowerCase() === "true";
 const host = import.meta.env.VITE_NAKAMA_HOST || "127.0.0.1";
 const port = import.meta.env.VITE_NAKAMA_PORT || "7350";
 const serverKey = import.meta.env.VITE_NAKAMA_SERVER_KEY || "defaultkey";
-
-const rawSSL = import.meta.env.VITE_NAKAMA_SSL;
 
 console.log("=== NAKAMA DEBUG ===");
 console.log("RAW SSL ENV:", rawSSL);
