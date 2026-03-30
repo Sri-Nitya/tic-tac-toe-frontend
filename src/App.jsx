@@ -36,91 +36,93 @@ function App() {
 
   if (screen === "nickname") {
     return (
-      <div style={{ textAlign: "center", marginTop: "100px" }}>
-        <h2>Enter Nickname</h2>
+      <div className="app-container">
+        <div className="app-card">
+          <h2>Enter Nickname</h2>
 
-        <input
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="Your name"
-        />
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="Your name"
+          />
 
-        <br /><br />
+          <br /><br />
 
-        <button
-          disabled={!nickname.trim()}
-          onClick={() => {
-            localStorage.setItem("nickname", nickname);
-            setScreen("lobby");
-          }}
-        >
-          Continue
-        </button>
-      </div>
-    );
-  }
-
-  if (screen === "lobby") {
-    return (
-      <Lobby
-        socket={socket}
-        session={session}
-        setMatch={(m) => {
-          setMatch(m);
-          setScreen("game");
-        }}
-        nickname={nickname}
-      />
-    );
-  }
-
-  if (screen === "game") {
-    return (
-      <Game
-        socket={socket}
-        match={match}
-        session={session}
-        nickname={nickname}
-        onGameEnd={(data) => {
-          setMatch(null);
-          setResult(data)
-          setScreen("result");
-        }}
-      />
-    );
-  }
-
-  if (screen === "result") {
-    return (
-      <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
-        <div className="card p-4 shadow text-center" style={{ width: "350px" }}>
-
-          <h2 className="mb-3">
-            {resultData?.result === "win" && "🎉 You Won!"}
-            {resultData?.result === "lose" && "😔 You Lost"}
-            {resultData?.result === "draw" && "🤝 It's a Draw"}
-          </h2>
-
-          <p className="mb-2">
-            <strong>{nickname}</strong> vs Opponent
-          </p>
-
-          <div className="mt-3">
-
-            <button
-              className="btn btn-outline-secondary w-100"
-              onClick={() => setScreen("lobby")}
-            >
-              Back to Lobby
-            </button>
-          </div>
-
+          <button
+            disabled={!nickname.trim()}
+            onClick={() => {
+              localStorage.setItem("nickname", nickname);
+              setScreen("lobby");
+            }}
+          >
+            Continue
+          </button>
         </div>
       </div>
-    );
+        );
+  }
+
+        if (screen === "lobby") {
+    return (
+        <Lobby
+          socket={socket}
+          session={session}
+          setMatch={(m) => {
+            setMatch(m);
+            setScreen("game");
+          }}
+          nickname={nickname}
+        />
+        );
+  }
+
+        if (screen === "game") {
+    return (
+        <Game
+          socket={socket}
+          match={match}
+          session={session}
+          nickname={nickname}
+          onGameEnd={(data) => {
+            setMatch(null);
+            setResult(data)
+            setScreen("result");
+          }}
+        />
+        );
+  }
+
+        if (screen === "result") {
+    return (
+        <div className="app-container">
+          <div className="app-card">
+
+            <h2 className="mb-3">
+              {resultData?.result === "win" && "🎉 You Won!"}
+              {resultData?.result === "lose" && "😔 You Lost"}
+              {resultData?.result === "draw" && "🤝 It's a Draw"}
+            </h2>
+
+            <p className="mb-2">
+              <strong>{nickname}</strong> vs Opponent
+            </p>
+
+            <div className="mt-3">
+
+              <button
+                className="btn btn-outline-secondary w-100"
+                onClick={() => setScreen("lobby")}
+              >
+                Back to Lobby
+              </button>
+            </div>
+
+          </div>
+        </div>
+        );
   }
 }
 
 
 
-export default App;
+        export default App;

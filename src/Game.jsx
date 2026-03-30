@@ -127,11 +127,11 @@ export default function Game({ socket, match, session, onGameEnd }) {
 
     if (status === "Waiting for opponent...") {
         return (
-            <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
-                <div className="card p-4 shadow text-center" style={{ width: "360px" }}>
+            <div className="app-container">
+                <div className="app-card">
                     <h2 className="mb-3">Waiting for opponent...</h2>
 
-                    <div className="d-flex justify-content-center mb-3">
+                    <div className="d-flex justify-content-center my-3">
                         <div className="spinner-border text-primary" role="status">
                             <span className="visually-hidden">Loading...</span>
                         </div>
@@ -152,39 +152,64 @@ export default function Game({ socket, match, session, onGameEnd }) {
     }
 
     return (
-        <div style={{ textAlign: "center" }}>
-            <h2>You are: {symbol || "..."}</h2>
-            <h3>{status}</h3>
-
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 100px)",
-                    gap: "10px",
-                    justifyContent: "center",
-                    marginTop: "20px",
-                }}
-            >
-                {board.map((cell, i) => (
-                    <div
-                        key={i}
-                        onClick={() => sendMove(i)}
-                        style={{
-                            width: "100px",
-                            height: "100px",
-                            border: "2px solid black",
-                            fontSize: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: isMyTurn && cell === "" ? "pointer" : "not-allowed",
-                            opacity: isMyTurn || cell !== "" ? 1 : 0.6,
-                            background: "#f9f9f9",
-                        }}
-                    >
-                        {cell}
+        <div className="app-container">
+            <div className="app-card">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="text-center flex-fill">
+                        <div className="fw-bold fs-5">{symbol || "X"}</div>
+                        <div className="small text-muted">(you)</div>
                     </div>
-                ))}
+                    <div className="text-center flex-fill">
+                        <div className="fw-bold fs-5">
+                            {symbol === "X" ? "O" : symbol === "O" ? "X" : "..."}
+                        </div>
+                        <div className="small text-muted">(opp)</div>
+                    </div>
+                </div>
+
+                <h3 className="mb-4 fw-semibold">
+                    {turn ? `${turn} Turn` : "Waiting..."}
+                </h3>
+
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 90px)",
+                        gap: "12px",
+                        justifyContent: "center",
+                        margin: "0 auto",
+                    }}
+                >
+                    {board.map((cell, i) => (
+                        <button
+                            key={i}
+                            onClick={() => sendMove(i)}
+                            disabled={!isMyTurn || cell !== ""}
+                            style={{
+                                width: "90px",
+                                height: "90px",
+                                border: "none",
+                                borderRadius: "12px",
+                                fontSize: "2rem",
+                                fontWeight: "600",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: isMyTurn && cell === "" ? "pointer" : "default",
+                                color: cell === "X" ? "#000" : cell === "O" ? "#214c8c67" : "transparent",
+                                background: "#f3f4f6",
+                                boxShadow: "inset 0 0 0 1px #d1d5db",
+                                marginTop: "10px",
+                            }}
+                        >
+                            {cell}
+                        </button>
+                    ))}
+                </div>
+
+                <p className="small text-muted mt-4 mb-0">
+                    {status}
+                </p>
             </div>
         </div>
     );
