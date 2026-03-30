@@ -8,7 +8,23 @@ export default function Game({ socket, match, session }) {
     const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!match) return;
+
+        const presences = match.presences || [];
+
+        if (presences.length === 0) {
+            setSymbol("X");
+            setTurn("X");
+            setStatus("Waiting for opponent...");
+        } else if (presences.length === 1) {
+            setSymbol("O");
+            setTurn("X");
+            setStatus("Opponent's turn");
+        }
+    }, [match]);
+
+    useEffect(() => {
+        if (!socket || !session) return;
 
         const handleMatchData = (message) => {
             try {
@@ -26,24 +42,33 @@ export default function Game({ socket, match, session }) {
                         setTurn(payload.turn);
                     }
 
-                    if (payload.players && session) {
+                    if (payload.players) {
                         const myId = session.user_id;
-                        if (payload.players[myId]) {
-                            setSymbol(payload.players[myId]);
-                        }
-                    }
+                        const mySymbol = payload.players[myId] || "";
+                        const playerCount = Object.keys(payload.players).length;
 
-                    if (payload.gameOver) {
-                        setGameOver(true);
-                        if (payload.winner) {
-                            setStatus(`Winner: ${payload.winner}`);
-                        } else {
-                            setStatus("Game over");
+                        if (mySymbol) {
+                            setSymbol(mySymbol);
                         }
-                    } else if (payload.turn) {
-                        setStatus(`Turn: ${payload.turn}`);
-                    } else {
-                        setStatus("Waiting for opponent...");
+
+                        if (payload.gameOver) {
+                            setGameOver(true);
+                            setStatus(payload.winner ? `Winner: ${payload.winner}` : "Game over");
+                            return;
+                        }
+
+                        if (playerCount < 2) {
+                            setStatus("Waiting for opponent...");
+                            return;
+                        }
+
+                        const currentTurn = payload.turn || turn;
+
+                        if (mySymbol && currentTurn === mySymbol) {
+                            setStatus("Your turn");
+                        } else {
+                            setStatus("Opponent's turn");
+                        }
                     }
                 }
 
@@ -53,9 +78,9 @@ export default function Game({ socket, match, session }) {
                     if (payload.type === "win") {
                         setStatus(`Winner: ${payload.winner}`);
                     } else if (payload.type === "draw") {
-                        setStatus(payload.message || "It's a draw");
+                        setStatus("It's a draw");
                     } else if (payload.type === "disconnect") {
-                        setStatus(payload.message || "Opponent disconnected");
+                        setStatus("Opponent disconnected");
                     }
                 }
             } catch (err) {
@@ -69,8 +94,7 @@ export default function Game({ socket, match, session }) {
         return () => {
             socket.onmatchdata = null;
         };
-
-    }, [socket, session]);
+    }, [socket, session, turn]);
 
     const sendMove = (index) => {
         if (!socket || !match || gameOver) return;
