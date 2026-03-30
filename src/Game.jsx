@@ -55,12 +55,12 @@ export default function Game({ socket, match, session, onGameEnd }) {
                             setGameOver(true);
 
                             const result = payload.winner ? payload.winner === session.user_id ? "win" : "lose" : "draw";
-                            setStatus(payload.winner ? `Winner: ${payload.winner}` : "Game over");
+                            setStatus("Game over");
                             if (onGameEnd) {
                                 setTimeout(() => onGameEnd({
                                     result,
                                     winner: payload.winner,
-                                }), 1500); 
+                                }), 1500);
                             }
                             return;
                         }
@@ -90,7 +90,7 @@ export default function Game({ socket, match, session, onGameEnd }) {
                     } else if (payload.type === "draw") {
                         result = "draw";
                     } else if (payload.type === "disconnect") {
-                        result = "win"; 
+                        result = "win";
                     }
 
                     if (onGameEnd) {
@@ -122,8 +122,34 @@ export default function Game({ socket, match, session, onGameEnd }) {
         const data = new TextEncoder().encode(JSON.stringify({ row, col }));
         socket.sendMatchState(match.match_id, 1, data);
     };
-    
+
     const isMyTurn = turn === symbol && !gameOver;
+
+    if (status === "Waiting for opponent...") {
+        return (
+            <div className="d-flex vh-100 justify-content-center align-items-center bg-light">
+                <div className="card p-4 shadow text-center" style={{ width: "360px" }}>
+                    <h2 className="mb-3">Waiting for opponent...</h2>
+
+                    <div className="d-flex justify-content-center mb-3">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <p className="text-muted">
+                        Your room is ready. Another player can join now.
+                    </p>
+
+                    {match?.match_id && (
+                        <p className="mt-3 small text-break">
+                            <strong>Match ID:</strong> {match.match_id}
+                        </p>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ textAlign: "center" }}>
