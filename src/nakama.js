@@ -6,16 +6,6 @@ const host = import.meta.env.VITE_NAKAMA_HOST || "127.0.0.1";
 const port = import.meta.env.VITE_NAKAMA_PORT || "7350";
 const serverKey = import.meta.env.VITE_NAKAMA_SERVER_KEY || "defaultkey";
 
-console.log("=== NAKAMA DEBUG ===");
-console.log("RAW SSL ENV:", rawSSL);
-console.log("PARSED useSSL:", useSSL);
-console.log("HOST:", host);
-console.log("PORT:", port);
-console.log(
-    "FINAL SOCKET URL:",
-    `${useSSL ? "wss" : "ws"}://${host}:${port}/ws`
-);
-console.log("====================");
 
 export const client = new Client(serverKey, host, port, useSSL);
 
@@ -52,7 +42,6 @@ export const authenticate = async () => {
 
     const deviceId = getDeviceId();
     currentSession = await client.authenticateDevice(deviceId, true);
-    console.log("Authenticated:", currentSession);
 
     return currentSession;
 };
@@ -67,6 +56,5 @@ export const createSocket = async () => {
     currentSocket = client.createSocket(useSSL, false);
     await currentSocket.connect(session, true);
 
-    console.log("Socket connected");
     return { socket: currentSocket, session };
 };

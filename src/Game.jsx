@@ -6,7 +6,6 @@ export default function Game({ socket, match, session, nickname, onGameEnd }) {
     const [status, setStatus] = useState("Waiting for opponent...");
     const [symbol, setSymbol] = useState("");
     const [gameOver, setGameOver] = useState(false);
-    const [opponentName, setOpponentName] = useState("Opponent");
 
     useEffect(() => {
         if (!match) return;
@@ -32,7 +31,6 @@ export default function Game({ socket, match, session, nickname, onGameEnd }) {
                 const decoded = new TextDecoder().decode(message.data);
                 const payload = JSON.parse(decoded);
 
-                console.log("MATCH DATA:", message.op_code, payload);
 
                 if (message.op_code === 1) {
                     if (payload.board) {
@@ -164,7 +162,7 @@ export default function Game({ socket, match, session, nickname, onGameEnd }) {
                         <div className="fw-bold fs-5">
                             {symbol === "X" ? "O" : symbol === "O" ? "X" : "..."}
                         </div>
-                        <div className="small text-muted">{opponentName}</div>
+                        <div className="small text-muted">Opponent</div>
                     </div>
                 </div>
 

@@ -46,7 +46,6 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
 
             const createdMatchId = data.matchId;
             const joinedMatch = await socket.joinMatch(createdMatchId);
-            console.log("Match Id:", createdMatchId);
 
             setMatchId(createdMatchId);
             setMatch(joinedMatch);
@@ -146,9 +145,9 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
           <p className="text-muted mb-0">No open rooms available.</p>
         ) : (
           <div className="room-card border rounded-3 p-3 bg-white">
-            {rooms.map((room) => (
+            {rooms.map((room, index) => (
               <div
-                key={room.match_id}
+                key={room.match_id || room.matchId || `room-${index}`}
                 className="border rounded-3 p-3 text-start bg-white"
               >
                 <p className="mb-1 small text-break">
@@ -176,7 +175,7 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
           <div className="room-card border rounded-3 p-3 bg-white">
             {leaderboard.slice(0, 10).map((player, index) => (
               <div
-                key={player.user_id}
+                key={player.userId || `leader-${index}`}
                 className="d-flex justify-content-between align-items-center border-bottom py-2"
               >
                 <div>
