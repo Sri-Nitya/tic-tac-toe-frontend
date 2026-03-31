@@ -8,8 +8,10 @@ function App() {
   const [match, setMatch] = useState(null);
   const [session, setSession] = useState(null);
   const [error, setError] = useState("");
-  const [screen, setScreen] = useState("nickname");
-  const [nickname, setNickname] = useState("");
+  const [screen, setScreen] = useState(() =>
+    localStorage.getItem("nickname") ? "lobby" : "nickname"
+  );
+  const [nickname, setNickname] = useState(() => localStorage.getItem("nickname") || "");
   const [resultData, setResult] = useState(null);
 
   useEffect(() => {
@@ -25,6 +27,15 @@ function App() {
     };
     init();
   }, []);
+
+  const handleNicknameContinue = () => {
+    const trimmedNickname = nickname.trim();
+    if (!trimmedNickname) return;
+
+    localStorage.setItem("nickname", trimmedNickname);
+    setNickname(trimmedNickname);
+    setScreen("lobby");
+  }
 
   if (error) {
     return <div style={{ textAlign: "center", marginTop: "50px" }}>{error}</div>;
@@ -48,81 +59,75 @@ function App() {
 
           <br /><br />
 
-          <button
-            disabled={!nickname.trim()}
-            onClick={() => {
-              localStorage.setItem("nickname", nickname);
-              setScreen("lobby");
-            }}
-          >
+          <button disabled={!nickname.trim()} onClick={handleNicknameContinue}>
             Continue
           </button>
         </div>
       </div>
-        );
+    );
   }
 
-        if (screen === "lobby") {
+  if (screen === "lobby") {
     return (
-        <Lobby
-          socket={socket}
-          session={session}
-          setMatch={(m) => {
-            setMatch(m);
-            setScreen("game");
-          }}
-          nickname={nickname}
-        />
-        );
+      <Lobby
+        socket={socket}
+        session={session}
+        setMatch={(m) => {
+          setMatch(m);
+          setScreen("game");
+        }}
+        nickname={nickname}
+      />
+    );
   }
 
-        if (screen === "game") {
+  if (screen === "game") {
     return (
-        <Game
-          socket={socket}
-          match={match}
-          session={session}
-          nickname={nickname}
-          onGameEnd={(data) => {
-            setMatch(null);
-            setResult(data)
-            setScreen("result");
-          }}
-        />
-        );
+      <Game
+        socket={socket}
+        match={match}
+        session={session}
+        nickname={nickname}
+        onGameEnd={(data) => {
+          setMatch(null);
+          setResult(data)
+          setScreen("result");
+        }}
+      />
+    );
   }
 
-        if (screen === "result") {
+  if (screen === "result") {
     return (
-        <div className="app-container">
-          <div className="app-card">
+      <div className="app-container">
+        <div className="app-card">
 
-            <h2 className="mb-3">
-              {resultData?.result === "win" && "🎉 You Won!"}
-              {resultData?.result === "lose" && "😔 You Lost"}
-              {resultData?.result === "draw" && "🤝 It's a Draw"}
-            </h2>
+          <h2 className="mb-3">
+            {resultData?.result === "win" && "🎉 You Won!"}
+            {resultData?.result === "lose" && "😔 You Lost"}
+            {resultData?.result === "draw" && "🤝 It's a Draw"}
+          </h2>
 
-            <p className="mb-2">
-              <strong>{nickname}</strong> vs Opponent
-            </p>
+          <p className="mb-2">
+            <strong>{nickname}</strong> vs Opponent
+          </p>
 
-            <div className="mt-3">
+          <div className="mt-3">
 
-              <button
-                className="btn btn-outline-secondary w-100"
-                onClick={() => setScreen("lobby")}
-              >
-                Back to Lobby
-              </button>
-            </div>
-
+            <button
+              className="btn btn-outline-secondary w-100"
+              onClick={() => setScreen("lobby")}
+            >
+              Back to Lobby
+            </button>
           </div>
+
         </div>
-        );
+      </div>
+    );
   }
+
+  return null;
 }
 
-
-
-        export default App;
+export default App;

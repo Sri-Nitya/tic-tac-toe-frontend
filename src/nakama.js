@@ -22,10 +22,35 @@ export const client = new Client(serverKey, host, port, useSSL);
 let currentSession = null;
 let currentSocket = null;
 
+const getDeviceId = () => {
+    let deviceId = localStorage.getItem("deviceId");
+
+    if (!deviceId) {
+        deviceId =
+            typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : "device-" + Math.random().toString(36).slice(2);
+
+        localStorage.setItem("deviceId", deviceId);
+    }
+
+    return deviceId;
+};
+
+export const clearStoredIdentity = () => {
+    localStorage.removeItem("deviceId");
+    currentSession = null;
+
+    if (currentSocket) {
+        currentSocket.disconnect();
+        currentSocket = null;
+    }
+};
+
 export const authenticate = async () => {
     if (currentSession) return currentSession;
 
-    const deviceId = "device-" + Math.random().toString(36).slice(2);
+    const deviceId = getDeviceId();
     currentSession = await client.authenticateDevice(deviceId, true);
     console.log("Authenticated:", currentSession);
 
