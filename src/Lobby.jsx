@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { client } from "./nakama";
 
-export default function Lobby({ socket, session, setMatch }) {
+export default function Lobby({ socket, session, setMatch, nickname }) {
     const [matchId, setMatchId] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -94,6 +94,8 @@ export default function Lobby({ socket, session, setMatch }) {
       <div className="app-card">
         <h2 className="mb-3">Tic Tac Toe</h2>
         <p className="text-muted mb-4">Create a room, join one, or find a quick match.</p>
+        <p className="text-muted mb-2">Welcome, {nickname}!</p>
+
 
         <div className="d-grid gap-2 mb-3">
           <button className="btn btn-success" onClick={createMatch} disabled={loading}>

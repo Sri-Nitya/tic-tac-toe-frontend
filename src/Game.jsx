@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 
-export default function Game({ socket, match, session, onGameEnd }) {
+export default function Game({ socket, match, session, nickname, onGameEnd }) {
     const [board, setBoard] = useState(Array(9).fill(""));
     const [turn, setTurn] = useState("");
     const [status, setStatus] = useState("Waiting for opponent...");
     const [symbol, setSymbol] = useState("");
     const [gameOver, setGameOver] = useState(false);
+    const [opponentName, setOpponentName] = useState("Opponent");
 
     useEffect(() => {
         if (!match) return;
@@ -157,18 +158,18 @@ export default function Game({ socket, match, session, onGameEnd }) {
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <div className="text-center flex-fill">
                         <div className="fw-bold fs-5">{symbol || "X"}</div>
-                        <div className="small text-muted">(you)</div>
+                        <div className="small text-muted">{nickname} (you)</div>
                     </div>
                     <div className="text-center flex-fill">
                         <div className="fw-bold fs-5">
                             {symbol === "X" ? "O" : symbol === "O" ? "X" : "..."}
                         </div>
-                        <div className="small text-muted">(opp)</div>
+                        <div className="small text-muted">{opponentName}</div>
                     </div>
                 </div>
 
                 <h3 className="mb-4 fw-semibold">
-                    {turn ? `${turn} Turn` : "Waiting..."}
+                    {status}
                 </h3>
 
                 <div
