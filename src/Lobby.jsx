@@ -6,6 +6,18 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [rooms, setRooms] = useState([]);
+    const [leaderboard, setLeaderboard] = useState([]);
+
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await client.rpc(session, "get_leaderboard", {});
+        const data =
+          typeof res.payload === "string" ? JSON.parse(res.payload) : res.payload;
+        setLeaderboard(data.leaders || []);
+      } catch (err) {
+        console.error("Failed to fetch leaderboard:", err);
+      }
+    };
 
     const fetchRooms = async () => {
         try {
@@ -19,6 +31,7 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
     };
 
     useEffect(() => {
+        fetchLeaderboard();
         fetchRooms();
     }, []);
 
@@ -151,6 +164,28 @@ export default function Lobby({ socket, session, setMatch, nickname }) {
                 >
                   Join Room
                 </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <hr className="my-4" />
+        <h5 className="mb-3">Leaderboard</h5>
+        {leaderboard.length === 0 ? (
+          <p className="text-muted mb-0">No leaderboard data available.</p>
+        ) : (
+          <div className="room-card border rounded-3 p-3 bg-white">
+            {leaderboard.slice(0, 10).map((player, index) => (
+              <div
+                key={player.user_id}
+                className="d-flex justify-content-between align-items-center border-bottom py-2"
+              >
+                <div>
+                  <strong>#{index + 1}</strong>{" "}
+                  {player.userId === session.user_id ? nickname || "You" : player.userId.slice(0, 8)}
+                </div>
+                <div className="small text-muted text-end">
+                  W: {player.wins} | L: {player.losses} | D: {player.draws} | Streak: {player.winStreak}
+                </div>
               </div>
             ))}
           </div>
