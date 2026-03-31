@@ -1,4 +1,4 @@
-Play the game here 👉 https://tic-tac-toe-frontend-gfvvs7v4a-sri-nityas-projects.vercel.app/
+Play the game here 👉 https://tic-tac-toe-frontend-lovat.vercel.app/
 ## ⚠️ Note on Initial Load
 
 The backend is hosted on Render free tier, which may cause a short delay (cold start) when the service is inactive.
